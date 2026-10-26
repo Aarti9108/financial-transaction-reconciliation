@@ -1,0 +1,21 @@
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+
+# Logs
+*.log
+```
