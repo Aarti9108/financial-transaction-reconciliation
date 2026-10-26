@@ -7,7 +7,11 @@ from fastapi import Body
 
 from backend.database import SessionLocal
 from backend.models import Transaction, ReconciliationResult
-from backend.schemas import TransactionCreate, TransactionResponse
+from backend.schemas import (
+    TransactionCreate,
+    TransactionResponse,
+    ReconciliationRequest,
+)
 
 app = FastAPI(
     title="Financial Reconciliation System",
@@ -60,25 +64,40 @@ def get_transactions(db: Session = Depends(get_db)):
 
 @app.post("/reconcile")
 def reconcile(
-    source_a: list[dict] = Body(...),
-    source_b: list[dict] = Body(...),
+    request: ReconciliationRequest,
     db: Session = Depends(get_db)
 ):
+    source_a = [
+        txn.model_dump()
+        for txn in request.source_a
+    ]
+
+    source_b = [
+        txn.model_dump()
+        for txn in request.source_b
+    ]
+
     results = reconcile_transactions(source_a, source_b)
 
     try:
         for result in results:
-            db.add(ReconciliationResult(**result))
+            db.add(
+                ReconciliationResult(
+                    transaction_reference=result["transaction_reference"],
+                    status=result["status"]
+                )
+            )
 
         db.commit()
-        return results
 
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(
             status_code=500,
-            detail="Failed to save reconciliation results."
+            detail="Failed to save reconciliation results"
         )
+
+    return results
 
 @app.get("/reconciliation-results")
 def get_reconciliation_results(db: Session = Depends(get_db)):

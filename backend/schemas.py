@@ -44,3 +44,42 @@ class TransactionResponse(TransactionCreate):
     created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class ReconciliationTransaction(BaseModel):
+    transaction_reference: str = Field(
+        min_length=1,
+        max_length=100
+    )
+    amount: Decimal = Field(
+        gt=0,
+        max_digits=12,
+        decimal_places=2
+    )
+    status: Literal["SUCCESS", "FAILED", "PENDING"]
+
+    transaction_date: datetime | None = None
+
+    @field_validator("transaction_reference")
+    @classmethod
+    def validate_reference(cls, value: str) -> str:
+        value = value.strip()
+
+        if not value:
+            raise ValueError(
+                "Transaction reference cannot be empty"
+            )
+
+        return value
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def normalize_status(cls, value: str) -> str:
+        if isinstance(value, str):
+            return value.strip().upper()
+
+        return value
+
+
+class ReconciliationRequest(BaseModel):
+    source_a: list[ReconciliationTransaction]
+    source_b: list[ReconciliationTransaction]
