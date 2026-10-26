@@ -56,9 +56,10 @@ def reconcile_transactions(source_a, source_b):
             elif (
                 txn_a.get("transaction_date") is not None
                 and txn_b.get("transaction_date") is not None
-                and txn_a["transaction_date"] != txn_b["transaction_date"]
+                and str(txn_a["transaction_date"])[:10]
+                != str(txn_b["transaction_date"])[:10]
             ):
-                status = "DATE_MISMATCH"
+             status = "DATE_MISMATCH"
 
             else:
                 status = "MATCHED"

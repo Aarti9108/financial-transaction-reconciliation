@@ -136,3 +136,26 @@ def test_date_mismatch():
     results = reconcile_transactions(source_a, source_b)
 
     assert results[0]["status"] == "DATE_MISMATCH"
+    
+def test_same_date_different_formats():
+    source_a = [
+        {
+            "transaction_reference": "TXN107",
+            "amount": 500,
+            "status": "SUCCESS",
+            "transaction_date": "2026-10-26",
+        }
+    ]
+
+    source_b = [
+        {
+            "transaction_reference": "TXN107",
+            "amount": 500,
+            "status": "SUCCESS",
+            "transaction_date": "2026-10-26T00:00:00",
+        }
+    ]
+
+    results = reconcile_transactions(source_a, source_b)
+
+    assert results[0]["status"] == "MATCHED"
